@@ -32,6 +32,8 @@ int main() {
 
     // --- Pedir clave al usuario ---
     char input_key[] = "AleXxD";
+    char criterio_1[] = "";
+    char criterio_2[] = "Light novel";
     char key[KEY_SIZE + 1];
     normalize_key(key, input_key);
 
@@ -56,21 +58,45 @@ int main() {
     int found = 0;
 
     while (current_offset != -1) {
-        fseek(index_file, current_offset, SEEK_SET); //ubica el puntero interno del archivo al valor que se le pase 
-        fread(&node, sizeof(Node), 1, index_file); //(variable donde guardar, cantidad de bytes a leer, cantidad de variables (1 nodo),archivo)
+        fseek(index_file, current_offset, SEEK_SET); // ubica el puntero interno del archivo al valor que se le pase
+        fread(&node, sizeof(Node), 1, index_file); // (variable donde guardar, cantidad de bytes a leer, cantidad de variables (1 nodo), archivo)
 
         // Leer registro en CSV usando dataset_offset
-        char line[LINE_BUFFER]; //definir un string tan grande para que queda (2048)
+        char line[LINE_BUFFER]; // definir un string tan grande para que quepa (2048)
         fseek(csv, node.dataset_offset, SEEK_SET);
         if (fgets(line, sizeof(line), csv)) {
             char line_copy[LINE_BUFFER];
             strcpy(line_copy, line);
-            char *line_key = strtok(line, ","); // Guarda la direccion donde empieza el primer campo
-            if(strcmp(line_key, input_key) == 0) { //si la clave del input coincide con la del archivo
-                printf("→ %s", line_copy);
-                found++;
+            char *line_key = strtok(line, ","); // Primer campo
+            strtok(NULL, ","); // Segundo campo
+            strtok(NULL, ","); // Tercer campo
+            strtok(NULL, ","); // Cuarto campo
+            strtok(NULL, ","); // Quinto campo 
+            char *line_criterio1 = strtok(NULL, ","); // Sexto campo (Nombre anime)
+            strtok(NULL,","); //Septimo campo
+            char *line_criterio2 = strtok(NULL, ","); // Octavo campo (Manga - Novel - Light Novel)
+            if (strcmp(line_key, input_key) == 0) { // si la clave del input coincide con la del archivo
+                if ((criterio_1[0] == '\0' && criterio_2[0] == '\0')) {
+                    printf("→ %s", line_copy);
+                    found++;
+                } else if (criterio_1[0] != '\0' && criterio_2[0] == '\0') {
+                    if (strcmp(line_criterio1, criterio_1) == 0) {
+                        printf("→ %s", line_copy);
+                        found++;
+                    }
+                } else if (criterio_1[0] == '\0' && criterio_2[0] != '\0') {
+                    if (strcmp(line_criterio2, criterio_2) == 0) {
+                        printf("→ %s", line_copy);
+                        found++;
+                    }
+                } else {
+                    if (strcmp(line_criterio1, criterio_1) == 0 && strcmp(line_criterio2, criterio_2) == 0) {
+                        printf("→ %s", line_copy);
+                        found++;
+                    }
+                }
             }
-        }    
+        }
         current_offset = node.next_node_offset;
     }
 
