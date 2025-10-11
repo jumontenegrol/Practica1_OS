@@ -2,6 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>     // write, mkfifo, close
+#include <fcntl.h>      // open, O_RDONLY, O_WRONLY
+#include <sys/types.h>  // ssize_t
+#include <sys/stat.h>   // mkfifo
+#include "hashmap.h"
 
 //#define FIFO_TO_BACK "fifo_to_back"
 //#define FIFO_TO_GUI "fifo_to_gui"
@@ -32,40 +37,56 @@ void on_search_clicked(GtkWidget *widget, gpointer data) {
     snprintf(id_val, sizeof(id_val), "%s", (id && strlen(id) > 0) ? id : "-");
 
     // Enviar datos al backend usando write
-    FILE *f_out = open(FIFO_IN, O_WRONLY);
+    int f_out = open(FIFO_IN, O_WRONLY);
     if (!f_out) {
         gtk_text_buffer_set_text(buffer, "Error al abrir FIFO de salida.\n", -1);
         return;
     }
 
     // Enviar con formato: clave nombre id
-    char mensaje[256];
+    char mensaje[512];
     snprintf(mensaje, sizeof(mensaje), "%s,%s,%s\n", clave, nombre_val, id_val);
     write(f_out, mensaje, strlen(mensaje));
-    fclose(f_out);
+    close(f_out);
 
 
     // Leer respuesta del backend usando fread
-    FILE *f_in = open(FIFO_OUT, O_RDONLY);
+    int f_in = open(FIFO_OUT, O_RDONLY);
     if (!f_in) {
         gtk_text_buffer_set_text(buffer, "Error al abrir FIFO de entrada.\n", -1);
         return;
     }
 
-    char output[8192] = "";
-    size_t pos = 0;
-    int c;
+    
+    /*char output[8192];
+    size_t total = 0;
+    int found_newline = 0;
+    char c;
 
-    // Leer carácter por carácter hasta '\n' o EOF
-    while ((c = fgetc(f_in)) != EOF && c != '\n') {
-        if (pos < sizeof(output) - 1)
-            output[pos++] = (char)c;
+    while (!found_newline && total < sizeof(output) - 1) {
+        ssize_t n = read(f_in, &c, 1);
+        if (n <= 0) break;
+        if (c == '\n') {
+            found_newline = 1;
+            break;
+        }
+        output[total++] = c;
+    }
+    output[total] = '\0';*/
+    char buffer1[256];
+    ssize_t n;
+
+    while ((n = read(f_in, buffer1, sizeof(buffer1)-1)) > 0) {
+        buffer1[n] = '\0';
+        printf("Recibido: %s", buffer1);
     }
 
-    output[pos] = '\0';
-    fclose(f_in);
+    if (n == 0) {
+        printf("📦 Fin del envío (EOF detectado)\n");
+    }
+    close(f_in);
 
-    gtk_text_buffer_set_text(buffer, output, -1);
+    gtk_text_buffer_set_text(buffer, buffer1, -1);
 
 }
 
