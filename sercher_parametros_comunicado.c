@@ -16,7 +16,7 @@ void sercher(char *parametros, long *header, FILE *index_file, FILE *csv, int fd
     char *input_key, *criterio_1, *criterio_2;
     input_key = strtok(parametros, ",");
     criterio_1 = strtok(NULL, ",");
-    criterio_2 = strtok(NULL, ",");
+    criterio_2 = strtok(NULL, "\0");
 
     char key[KEY_SIZE + 1];
     normalize_key(key, input_key);
@@ -29,57 +29,56 @@ void sercher(char *parametros, long *header, FILE *index_file, FILE *csv, int fd
     long current_offset = header[bucket];
 
     if (current_offset == -1) {
-        dprintf(fd_out, "No se encontraron registros para la clave '%s'.\n", key);
         printf("No se encontraron registros para la clave '%s'.\n", key);
+        dprintf(fd_out, "No se encontraron registros para la clave '%s'.\n", key);
         return;
     }
 
-    dprintf(fd_out, "Buscando registros para '%s' que coincida con '%s','%s'...\n", input_key, criterio_1, criterio_2);
     printf("Buscando registros para '%s' que coincida con '%s','%s'...\n", input_key, criterio_1, criterio_2);
+    dprintf(fd_out, "Buscando registros para '%s' que coincida con '%s','%s'...\n", input_key, criterio_1, criterio_2);
 
     // --- Recorrer lista enlazada en index.dat ---
     Node node;
     int found = 0;
 
     while (current_offset != -1) {
-        fseek(index_file, current_offset, SEEK_SET); // ubica el puntero interno del archivo al valor que se le pase
-        fread(&node, sizeof(Node), 1, index_file); // (variable donde guardar, cantidad de bytes a leer, cantidad de variables (1 nodo), archivo)
+        fseek(index_file, current_offset, SEEK_SET);
+        fread(&node, sizeof(Node), 1, index_file);
 
-        // Leer registro en CSV usando dataset_offset
-        char line[LINE_BUFFER]; // definir un string tan grande para que quepa (2048)
+        char line[LINE_BUFFER];
         fseek(csv, node.dataset_offset, SEEK_SET);
         if (fgets(line, sizeof(line), csv)) {
             char line_copy[LINE_BUFFER];
             strcpy(line_copy, line);
-            char *line_key = strtok(line, ","); // Primer campo
-            strtok(NULL, ","); // Segundo campo
-            strtok(NULL, ","); // Tercer campo
-            strtok(NULL, ","); // Cuarto campo
-            strtok(NULL, ","); // Quinto campo 
-            char *line_criterio1 = strtok(NULL, ","); // Sexto campo (Nombre anime)
-            strtok(NULL,","); //Septimo campo
-            char *line_criterio2 = strtok(NULL, ","); // Octavo campo (Manga - Novel - Light Novel)
-            if (strcmp(line_key, input_key) == 0) { // si la clave del input coincide con la del archivo
+            char *line_key = strtok(line, ",");
+            strtok(NULL, ",");
+            strtok(NULL, ",");
+            strtok(NULL, ",");
+            strtok(NULL, ",");
+            char *line_criterio1 = strtok(NULL, ",");
+            strtok(NULL,",");
+            char *line_criterio2 = strtok(NULL, ",");
+            if (strcmp(line_key, input_key) == 0) {
                 if ((strcmp(criterio_1, "-") == 0 && strcmp(criterio_2, "-") == 0)) {
-                    dprintf(fd_out, "->%s", line_copy);
                     printf("%s", line_copy);
+                    dprintf(fd_out, "%s", line_copy);
                     found++;
                 } else if (strcmp(criterio_1, "-") != 0 && strcmp(criterio_2, "-") == 0) {
                     if (strcmp(line_criterio1, criterio_1) == 0) {
-                        dprintf(fd_out, "->%s", line_copy);
                         printf("%s", line_copy);
+                        dprintf(fd_out, "%s", line_copy);
                         found++;
                     }
                 } else if (strcmp(criterio_1, "-") == 0 && strcmp(criterio_2, "-") != 0) {
                     if (strcmp(line_criterio2, criterio_2) == 0) {
-                        dprintf(fd_out, "->%s", line_copy);
                         printf("%s", line_copy);
+                        dprintf(fd_out, "%s", line_copy);
                         found++;
                     }
                 } else {
                     if (strcmp(line_criterio1, criterio_1) == 0 && strcmp(line_criterio2, criterio_2) == 0) {
-                        dprintf(fd_out, "->%s", line_copy);
                         printf("%s", line_copy);
+                        dprintf(fd_out, "%s", line_copy);
                         found++;
                     }
                 }
@@ -89,12 +88,12 @@ void sercher(char *parametros, long *header, FILE *index_file, FILE *csv, int fd
     }
 
     if (found == 0){
-        dprintf(fd_out, "No se encontraron registros para '%s'.\n", key);
         printf("No se encontraron registros para '%s'.\n", key);
+        dprintf(fd_out, "No se encontraron registros para '%s'.\n", key);
         return;
     } else {
-        dprintf(fd_out, "\nTotal de registros encontrados: %d\n", found);
         printf("\nTotal de registros encontrados: %d\n", found);
+        dprintf(fd_out, "\nTotal de registros encontrados: %d\n", found);
         return;
     }
 }
@@ -144,6 +143,7 @@ int main() {
 
         // Procesar el comando recibido
         printf("Comando recibido: %s\n", buffer);
+        dprintf(fd_out, "Comando recibido: %s\n", buffer);
         fd_out = open(FIFO_OUT, O_WRONLY);
         sercher(buffer, header, index_file, csv, fd_out);
         close(fd_out);
