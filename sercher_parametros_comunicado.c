@@ -61,33 +61,24 @@ void sercher(char *parametros, long *header, FILE *index_file, FILE *csv, int fd
             char *line_criterio2 = strtok(NULL, ","); // Octavo campo (Manga - Novel - Light Novel)
             if (strcmp(line_key, input_key) == 0) { // si la clave del input coincide con la del archivo
                 if ((strcmp(criterio_1, "-") == 0 && strcmp(criterio_2, "-") == 0)) {
-                    //char line_out[LINE_BUFFER + 2];
-                    //snprintf(line_out, sizeof(line_out), "%s\n", line_copy);
-                    //write(fd_out, line_out, strlen(line_out));
                     dprintf(fd_out, "->%s", line_copy);
                     printf("%s", line_copy);
                     found++;
                 } else if (strcmp(criterio_1, "-") != 0 && strcmp(criterio_2, "-") == 0) {
                     if (strcmp(line_criterio1, criterio_1) == 0) {
-                        char line_out[LINE_BUFFER + 2];
-                        snprintf(line_out, sizeof(line_out), "%s\n", line_copy);
-                        write(fd_out, line_out, strlen(line_out));
+                        dprintf(fd_out, "->%s", line_copy);
                         printf("%s", line_copy);
                         found++;
                     }
                 } else if (strcmp(criterio_1, "-") == 0 && strcmp(criterio_2, "-") != 0) {
                     if (strcmp(line_criterio2, criterio_2) == 0) {
-                        char line_out[LINE_BUFFER + 2];
-                        snprintf(line_out, sizeof(line_out), "%s\n", line_copy);
-                        write(fd_out, line_out, strlen(line_out));
+                        dprintf(fd_out, "->%s", line_copy);
                         printf("%s", line_copy);
                         found++;
                     }
                 } else {
                     if (strcmp(line_criterio1, criterio_1) == 0 && strcmp(line_criterio2, criterio_2) == 0) {
-                        char line_out[LINE_BUFFER + 2];
-                        snprintf(line_out, sizeof(line_out), "%s\n", line_copy);
-                        write(fd_out, line_out, strlen(line_out));
+                        dprintf(fd_out, "->%s", line_copy);
                         printf("%s", line_copy);
                         found++;
                     }
