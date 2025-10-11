@@ -57,13 +57,17 @@ void on_search_clicked(GtkWidget *widget, gpointer data) {
         return;
     }
     char buffer1[256];
-    ssize_t n;
+    ssize_t nbytes = read(fd_in, buffer, sizeof(buffer) - 1);
+	if (nbytes < 0) {
+		perror("Error al leer de FIFO_OUT");
+		close(fd_in);
+		return;
+	}
 
     gtk_text_buffer_set_text(buffer, "", -1);  // limpia antes
 
-    while ((n = read(f_in, buffer1, sizeof(buffer1)-1)) > 0) {
+    while ((nbytes = read(f_in, buffer1, sizeof(buffer1)-1)) > 0) {
         gtk_text_buffer_insert_at_cursor(buffer, buffer1, -1);
-
         // Forzar actualización visual inmediata
         while (gtk_events_pending()) gtk_main_iteration();
     }
