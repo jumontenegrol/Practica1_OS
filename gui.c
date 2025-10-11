@@ -31,8 +31,8 @@ void on_search_clicked(GtkWidget *widget, gpointer data) {
     snprintf(nombre_val, sizeof(nombre_val), "%s", (nombre && strlen(nombre) > 0) ? nombre : "-");
     snprintf(id_val, sizeof(id_val), "%s", (id && strlen(id) > 0) ? id : "-");
 
-    // Enviar datos al backend
-    FILE *f_out = fopen(FIFO_IN, "w");
+    // Enviar datos al backend usando write
+    FILE *f_out = open(FIFO_IN, O_WRONLY);
     if (!f_out) {
         gtk_text_buffer_set_text(buffer, "Error al abrir FIFO de salida.\n", -1);
         return;
@@ -46,7 +46,7 @@ void on_search_clicked(GtkWidget *widget, gpointer data) {
 
 
     // Leer respuesta del backend usando fread
-    FILE *f_in = fopen(FIFO_OUT, "r");
+    FILE *f_in = open(FIFO_OUT, O_RDONLY);
     if (!f_in) {
         gtk_text_buffer_set_text(buffer, "Error al abrir FIFO de entrada.\n", -1);
         return;
