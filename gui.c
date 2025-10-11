@@ -44,7 +44,8 @@ void on_search_clicked(GtkWidget *widget, gpointer data) {
     write(f_out, mensaje, strlen(mensaje));
     fclose(f_out);
 
-    // Leer respuesta del backend
+
+    // Leer respuesta del backend usando fread
     FILE *f_in = fopen(FIFO_OUT, "r");
     if (!f_in) {
         gtk_text_buffer_set_text(buffer, "Error al abrir FIFO de entrada.\n", -1);
@@ -52,12 +53,20 @@ void on_search_clicked(GtkWidget *widget, gpointer data) {
     }
 
     char output[8192] = "";
-    char line[512];
-    while (fgets(line, sizeof(line), f_in))
-        strcat(output, line);
+    size_t pos = 0;
+    int c;
+
+    // Leer carácter por carácter hasta '\n' o EOF
+    while ((c = fgetc(f_in)) != EOF && c != '\n') {
+        if (pos < sizeof(output) - 1)
+            output[pos++] = (char)c;
+    }
+
+    output[pos] = '\0';
     fclose(f_in);
 
     gtk_text_buffer_set_text(buffer, output, -1);
+
 }
 
 int main(int argc, char *argv[]) {
