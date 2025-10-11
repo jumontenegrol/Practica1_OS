@@ -1,0 +1,40 @@
+/* style.css */
+window {
+    background-color: #9f9fe6;  /* color de fondo */
+}
+
+entry {
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+button {
+    background: #4285f4;
+    color: rgb(150, 33, 33);
+    border-radius: 5px;
+    font-weight: bold;
+    padding: 6px 10px;
+}
+
+button:hover {
+    background: #357ae8;
+}
+
+label {
+    color: #333;
+    font-family: "Sans";
+    font-size: 12pt;
+}
+
+textview {
+    background-color: #ffffff;
+    border: 1px solid #bbb;
+    border-radius: 5px;
+}
+#resultado {
+    background-color: #eef3fb;
+    color: #222;
+    border: 1px solid #a3bffa;
+}
