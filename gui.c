@@ -56,38 +56,22 @@ void on_search_clicked(GtkWidget *widget, gpointer data) {
         gtk_text_buffer_set_text(buffer, "Error al abrir FIFO de entrada.\n", -1);
         return;
     }
-
-    
-    /*char output[8192];
-    size_t total = 0;
-    int found_newline = 0;
-    char c;
-
-    while (!found_newline && total < sizeof(output) - 1) {
-        ssize_t n = read(f_in, &c, 1);
-        if (n <= 0) break;
-        if (c == '\n') {
-            found_newline = 1;
-            break;
-        }
-        output[total++] = c;
-    }
-    output[total] = '\0';*/
     char buffer1[256];
     ssize_t n;
 
+    gtk_text_buffer_set_text(buffer, "", -1);  // limpia antes
+
     while ((n = read(f_in, buffer1, sizeof(buffer1)-1)) > 0) {
-        buffer1[n] = '\0';
-        printf("Recibido: %s", buffer1);
+        gtk_text_buffer_insert_at_cursor(buffer, buffer1, -1);
+
+        // Forzar actualización visual inmediata
+        while (gtk_events_pending()) gtk_main_iteration();
     }
 
     if (n == 0) {
-        printf("📦 Fin del envío (EOF detectado)\n");
+        gtk_text_buffer_insert_at_cursor(buffer, "\n Fin del envío.\n", -1);
     }
     close(f_in);
-
-    gtk_text_buffer_set_text(buffer, buffer1, -1);
-
 }
 
 int main(int argc, char *argv[]) {
