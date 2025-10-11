@@ -23,6 +23,7 @@ void on_search_clicked(GtkWidget *widget, gpointer data) {
     const char *nombre = gtk_entry_get_text(GTK_ENTRY(entry_nombre));
     const char *id = gtk_entry_get_text(GTK_ENTRY(entry_id));
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview_output));
+    gtk_text_buffer_set_text(buffer, "", -1);
 
     // Validar que la clave no esté vacía
     if (!clave || strlen(clave) == 0) {
@@ -37,6 +38,7 @@ void on_search_clicked(GtkWidget *widget, gpointer data) {
     snprintf(id_val, sizeof(id_val), "%s", (id && strlen(id) > 0) ? id : "-");
 
     // Enviar datos al backend usando write
+
     int f_out = open(FIFO_IN, O_WRONLY);
     if (!f_out) {
         gtk_text_buffer_set_text(buffer, "Error al abrir FIFO de salida.\n", -1);
@@ -45,37 +47,40 @@ void on_search_clicked(GtkWidget *widget, gpointer data) {
 
     // Enviar con formato: clave nombre id
     char mensaje[512];
-    snprintf(mensaje, sizeof(mensaje), "%s,%s,%s\n", clave, nombre_val, id_val);
+    int bytes = snprintf(mensaje, sizeof(mensaje), "%s,%s,%s", clave, nombre_val, id_val);
+    mensaje[bytes] = '\0'; // Asegurar terminación nula
+    printf("Enviando: %s\n", mensaje);
     write(f_out, mensaje, strlen(mensaje));
     close(f_out);
 
-
-    // Leer respuesta del backend usando fread
-    int f_in = open(FIFO_OUT, O_RDONLY);
-    if (!f_in) {
-        gtk_text_buffer_set_text(buffer, "Error al abrir FIFO de entrada.\n", -1);
-        return;
-    }
-    char buffer1[256];
-    ssize_t nbytes = read(fd_in, buffer, sizeof(buffer) - 1);
-	if (nbytes < 0) {
-		perror("Error al leer de FIFO_OUT");
-		close(fd_in);
+    int fd_in = open(FIFO_OUT, O_RDONLY);
+	if (fd_in < 0) {
+		perror("No se pudo abrir FIFO_OUT para leer");
 		return;
 	}
 
-    gtk_text_buffer_set_text(buffer, "", -1);  // limpia antes
+	FILE *fp = fdopen(fd_in, "r");
+    if (!fp) {
+        perror("Error en fdopen()");
+        close(fd_in);
+        return;
+    }
 
-    while ((nbytes = read(f_in, buffer1, sizeof(buffer1)-1)) > 0) {
+    char buffer1[4096];
+    while (fgets(buffer1, sizeof(buffer1), fp)) {
+        printf("Recibido: %s", buffer1);
         gtk_text_buffer_insert_at_cursor(buffer, buffer1, -1);
-        // Forzar actualización visual inmediata
-        while (gtk_events_pending()) gtk_main_iteration();
     }
 
-    if (n == 0) {
-        gtk_text_buffer_insert_at_cursor(buffer, "\n Fin del envío.\n", -1);
-    }
-    close(f_in);
+    printf("Fin del envío (EOF detectado)\n");
+    fclose(fp);
+    gtk_entry_set_text(GTK_ENTRY(entry_clave), "");
+    gtk_entry_set_text(GTK_ENTRY(entry_nombre), "");
+    gtk_entry_set_text(GTK_ENTRY(entry_id), "");
+    return;
+
+    //close(fd_in);
+    
 }
 
 int main(int argc, char *argv[]) {
@@ -110,13 +115,20 @@ int main(int argc, char *argv[]) {
     GtkWidget *button = gtk_button_new_with_label("Buscar registro");
     g_signal_connect(button, "clicked", G_CALLBACK(on_search_clicked), NULL);
     gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
-
-    // Área de salida
+    
+    // --- TextView con Scroll ---
     textview_output = gtk_text_view_new();
     gtk_text_view_set_editable(GTK_TEXT_VIEW(textview_output), FALSE);
-    gtk_box_pack_start(GTK_BOX(vbox), textview_output, TRUE, TRUE, 0);
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview_output), GTK_WRAP_WORD_CHAR);
 
-     // --- Cargar CSS ---
+    GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
+    gtk_container_add(GTK_CONTAINER(scroll), textview_output);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
+                                   GTK_POLICY_AUTOMATIC,
+                                   GTK_POLICY_AUTOMATIC);
+    gtk_box_pack_start(GTK_BOX(vbox), scroll, TRUE, TRUE, 0);
+    
+    // --- Cargar CSS ---
     GtkCssProvider *provider = gtk_css_provider_new();
     gtk_css_provider_load_from_path(provider, "style.css", NULL);
     gtk_style_context_add_provider_for_screen(
