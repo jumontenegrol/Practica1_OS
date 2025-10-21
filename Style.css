@@ -1,0 +1,60 @@
+/*window {
+    background-image: url("mona_china.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: rgba(0, 0, 0, 0.4);
+    background-blend-mode: overlay;
+}*/
+window {
+    background-image: url("fondo_naruto.jpg");
+    background-size: cover;      /* cubre todo el área */
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+box, scrolledwindow, viewport {
+    background: transparent;
+}
+
+/* Entradas */
+entry {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    color: #ffffff;
+    caret-color: #ffffff;
+    padding: 5px;
+}
+entry:focus {
+    border-bottom: 2px solid #ffffff;
+}
+entry placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* TextView */
+textview, textview text {
+    background: rgba(0, 0, 0, 0.2); /* leve fondo para que no desaparezca el texto */
+    color: #ffffff;
+    border-radius: 5px;
+}
+
+/* Labels y botones */
+label {
+    color: #ffffff;
+    font-family: "Sans";
+    font-size: 12pt;
+}
+
+button {
+    background: rgba(255,255,255,0.2);
+    color: #ffffff;
+    border-radius: 5px;
+    font-weight: bold;
+    padding: 6px 10px;
+}
+
+button:hover {
+    background: rgba(255,255,255,0.4);
+}
