@@ -28,6 +28,9 @@ void on_search_clicked(GtkWidget *widget, gpointer data) {
     // Validar que la clave no esté vacía
     if (!clave || strlen(clave) == 0) {
         gtk_text_buffer_set_text(buffer, "Ingrese al menos la clave.\n", -1);
+        gtk_entry_set_text(GTK_ENTRY(entry_clave), "");
+        gtk_entry_set_text(GTK_ENTRY(entry_nombre), "");
+        gtk_entry_set_text(GTK_ENTRY(entry_id), "");
         return;
     }
 
@@ -92,6 +95,7 @@ int main(int argc, char *argv[]) {
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
+    gtk_widget_set_name(vbox, "main_box");
     gtk_container_add(GTK_CONTAINER(window), vbox);
     
     // Label de instrucciones
@@ -104,11 +108,11 @@ int main(int argc, char *argv[]) {
     gtk_box_pack_start(GTK_BOX(vbox), entry_clave, FALSE, FALSE, 0);
 
     entry_nombre = gtk_entry_new();
-    gtk_entry_set_placeholder_text(GTK_ENTRY(entry_nombre), "Nombre...");
+    gtk_entry_set_placeholder_text(GTK_ENTRY(entry_nombre), "Nombre Anime...");
     gtk_box_pack_start(GTK_BOX(vbox), entry_nombre, FALSE, FALSE, 0);
 
     entry_id = gtk_entry_new();
-    gtk_entry_set_placeholder_text(GTK_ENTRY(entry_id), "ID...");
+    gtk_entry_set_placeholder_text(GTK_ENTRY(entry_id), "Fuente...");
     gtk_box_pack_start(GTK_BOX(vbox), entry_id, FALSE, FALSE, 0);
 
     // Botón de búsqueda

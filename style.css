@@ -1,25 +1,28 @@
 /* style.css */
 window {
-    background-color: #9f9fe6;  /* color de fondo */
+    background-image: url("fondo_naruto.jpg"); /* ruta de la imagen de fondo */
+    background-size: cover;       /* ajusta la imagen al tamaño de la ventana */
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
 entry {
     background-color: #ffffff;
-    border: 1px solid #ccc;
+    border: 1px solid #ffffff;
     border-radius: 5px;
     padding: 5px;
 }
 
 button {
-    background: #4285f4;
-    color: rgb(150, 33, 33);
+    background: #d4d4d4;
+    color: rgb(255, 255, 255);
     border-radius: 5px;
     font-weight: bold;
     padding: 6px 10px;
 }
 
 button:hover {
-    background: #357ae8;
+    background: #fdfdfd;
 }
 
 label {
@@ -30,11 +33,13 @@ label {
 
 textview {
     background-color: #ffffff;
-    border: 1px solid #bbb;
+    border: 1px solid #fdfdfd;
     border-radius: 5px;
 }
 #resultado {
     background-color: #eef3fb;
-    color: #222;
+    color: #ffffff;
     border: 1px solid #a3bffa;
 }
+
+
